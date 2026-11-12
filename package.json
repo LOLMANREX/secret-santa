@@ -1,0 +1,9 @@
+{
+  "name": "secret-santa-noel",
+  "version": "1.0.0",
+  "description": "Application complète de Secret Santa avec comptes, sessions et décoration de Noël",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secret Santa de Noël 🎄 — Tirage au Sort Secret</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- Flocons de neige animés -->
+  <canvas id="snow-canvas"></canvas>
+
+  <!-- Guirlande lumineuse de Noël -->
+  <div class="fairy-lights" aria-hidden="true">
+    <span class="bulb red"></span>
+    <span class="bulb gold"></span>
+    <span class="bulb green"></span>
+    <span class="bulb blue"></span>
+    <span class="bulb red"></span>
+    <span class="bulb gold"></span>
+    <span class="bulb green"></span>
+    <span class="bulb blue"></span>
+    <span class="bulb red"></span>
+    <span class="bulb gold"></span>
+    <span class="bulb green"></span>
+    <span class="bulb blue"></span>
+    <span class="bulb red"></span>
+    <span class="bulb gold"></span>
+    <span class="bulb green"></span>
+    <span class="bulb blue"></span>
+    <span class="bulb red"></span>
+    <span class="bulb gold"></span>
+    <span class="bulb green"></span>
+    <span class="bulb blue"></span>
+  </div>
+
+  <!-- Barre de navigation -->
+  <header class="navbar">
+    <div class="brand" id="nav-brand">
+      <span class="brand-icon">🎅</span>
+      <span class="brand-title">Secret Santa</span>
+      <span class="brand-badge">Noël 2026</span>
+    </div>
+
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm" id="toggle-snow-btn" title="Activer/Désactiver la neige">
+        ❄️ Neige
+      </button>
+      <div id="nav-user-area" class="hidden" style="display: flex; align-items: center; gap: 10px;">
+        <button class="btn btn-outline btn-sm" id="nav-dashboard-btn">
+          🎄 Mes Sessions
+        </button>
+        <div class="user-pill">
+          <span class="avatar" id="nav-user-avatar">🎅</span>
+          <span id="nav-user-name">Lutins</span>
+        </div>
+        <button class="btn btn-outline btn-sm" id="logout-btn" title="Se déconnecter">
+          Déconnexion
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-container">
+    <!-- ==================== VUE AUTHENTIFICATION ==================== -->
+    <section id="auth-view">
+      <div class="hero-header">
+        <h1 class="hero-title">✨ La Magie du Secret Santa ✨</h1>
+        <p class="hero-subtitle">
+          Organisez votre tirage au sort de cadeaux de Noël en toute confidentialité.
+          Personne ne peut voir qui les autres ont tiré, et votre compte garde vos tirages en mémoire !
+        </p>
+      </div>
+
+      <div class="auth-wrapper">
+        <div class="festive-card candy-border">
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab active" id="tab-register">
+              🎄 Créer un compte
+            </button>
+            <button type="button" class="auth-tab" id="tab-login">
+              🔑 Se connecter
+            </button>
+          </div>
+
+          <!-- FORMULAIRE D'INSCRIPTION -->
+          <form id="register-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="reg-name">Votre Prénom ou Pseudo *</label>
+                <input type="text" id="reg-name" placeholder="Ex: Marie, Thomas..." required />
+              </div>
+              <div class="form-group">
+                <label for="reg-username">Identifiant de connexion *</label>
+                <input type="text" id="reg-username" placeholder="Ex: marie2026" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="reg-password">Mot de passe * (pour retrouver vos tirages plus tard)</label>
+              <input type="password" id="reg-password" placeholder="Minimum 4 caractères" required />
+            </div>
+
+            <div class="form-group">
+              <label>Choisissez votre avatar de Noël</label>
+              <div class="avatar-picker" id="avatar-picker">
+                <button type="button" class="avatar-option selected" data-avatar="🎅">🎅</button>
+                <button type="button" class="avatar-option" data-avatar="🤶">🤶</button>
+                <button type="button" class="avatar-option" data-avatar="🦌">🦌</button>
+                <button type="button" class="avatar-option" data-avatar="⛄">⛄</button>
+                <button type="button" class="avatar-option" data-avatar="🧝">🧝</button>
+                <button type="button" class="avatar-option" data-avatar="🎄">🎄</button>
+                <button type="button" class="avatar-option" data-avatar="🍪">🍪</button>
+                <button type="button" class="avatar-option" data-avatar="🦊">🦊</button>
+              </div>
+            </div>
+
+            <!-- CHOIX À L'INSCRIPTION : REJOINDRE OU CRÉER UNE SESSION -->
+            <div class="form-group">
+              <label>Que souhaitez-vous faire en créant votre compte ?</label>
+              <div class="choice-cards" id="initial-action-cards">
+                <div class="choice-card selected" data-action="join">
+                  <div class="choice-card-icon">🎟️</div>
+                  <div class="choice-card-title">Rejoindre une session</div>
+                  <div class="choice-card-desc">J'ai un code d'invitation</div>
+                </div>
+                <div class="choice-card" data-action="create">
+                  <div class="choice-card-icon">🎁</div>
+                  <div class="choice-card-title">Créer une session</div>
+                  <div class="choice-card-desc">Organiser un nouveau tirage</div>
+                </div>
+                <div class="choice-card" data-action="none">
+                  <div class="choice-card-icon">🏠</div>
+                  <div class="choice-card-title">Plus tard</div>
+                  <div class="choice-card-desc">Aller à mon espace</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sous-formulaire : Rejoindre une session -->
+            <div id="reg-subform-join" class="conditional-subform">
+              <div class="form-group">
+                <label for="reg-invite-code">Code de la session à rejoindre *</label>
+                <input type="text" id="reg-invite-code" placeholder="Ex: NOEL-7X9K" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px;" />
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="reg-join-wishlist">Vos idées de cadeaux / liste de souhaits (optionnel)</label>
+                <input type="text" id="reg-join-wishlist" placeholder="Ex: Un bon roman, du chocolat noir, une écharpe..." />
+              </div>
+            </div>
+
+            <!-- Sous-formulaire : Créer une session -->
+            <div id="reg-subform-create" class="conditional-subform hidden">
+              <div class="form-group">
+                <label for="reg-session-name">Nom de votre session Secret Santa *</label>
+                <input type="text" id="reg-session-name" placeholder="Ex: Noël en Famille 2026, Soirée entre Amis..." />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="reg-session-budget">Budget indicatif</label>
+                  <input type="text" id="reg-session-budget" placeholder="Ex: 20 € - 30 €" value="25 €" />
+                </div>
+                <div class="form-group">
+                  <label for="reg-session-date">Date de l'échange</label>
+                  <input type="date" id="reg-session-date" value="2026-12-25" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="reg-create-wishlist">Vos propres idées cadeaux (optionnel)</label>
+                <input type="text" id="reg-create-wishlist" placeholder="Ex: Jeux de société, thé de Noël, BD..." />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px; font-size: 1.05rem; padding: 14px;">
+              ✨ Créer mon compte de Noël
+            </button>
+          </form>
+
+          <!-- FORMULAIRE DE CONNEXION -->
+          <form id="login-form" class="hidden">
+            <p style="color: var(--snow-muted); font-size: 0.92rem; margin-bottom: 18px;">
+              Vous avez oublié qui vous avez tiré au sort ou vous voulez consulter vos sessions ? Connectez-vous ci-dessous !
+            </p>
+            <div class="form-group">
+              <label for="login-username">Votre identifiant</label>
+              <input type="text" id="login-username" placeholder="Votre identifiant (ex: marie2026)" required />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Votre mot de passe</label>
+              <input type="password" id="login-password" placeholder="Votre mot de passe" required />
+            </div>
+            <button type="submit" class="btn btn-gold btn-block" style="margin-top: 12px; font-size: 1.05rem; padding: 14px;">
+              🎄 Se connecter et voir mes tirages
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VUE TABLEAU DE BORD ==================== -->
+    <section id="dashboard-view" class="hidden">
+      <div class="hero-header">
+        <h1 class="hero-title" id="dashboard-welcome">Ho Ho Ho ! Bienvenue 🎅</h1>
+        <p class="hero-subtitle">
+          Retrouvez toutes vos sessions de Secret Santa, rejoignez-en une nouvelle ou découvrez en secret la personne que vous avez tirée au sort.
+        </p>
+      </div>
+
+      <!-- Actions rapides : Créer ou Rejoindre une session -->
+      <div class="dashboard-top-actions">
+        <div class="action-banner">
+          <div>
+            <h3>🎁 Créer une Session</h3>
+            <p>Lancez un nouveau groupe Secret Santa et invitez vos proches avec un code unique.</p>
+          </div>
+          <button class="btn btn-primary" id="open-create-modal-btn">
+            + Créer
+          </button>
+        </div>
+
+        <div class="action-banner">
+          <div>
+            <h3>🎟️ Rejoindre une Session</h3>
+            <p>Vous avez reçu un code (ex: NOEL-XXXX) ? Entrez-le pour participer au tirage !</p>
+          </div>
+          <button class="btn btn-gold" id="open-join-modal-btn">
+            Rejoindre
+          </button>
+        </div>
+      </div>
+
+      <!-- Liste des sessions de l'utilisateur -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-size: 1.45rem; color: var(--gold-light);">🎄 Mes Sessions Secret Santa</h2>
+        <button class="btn btn-outline btn-sm" id="refresh-sessions-btn">🔄 Actualiser</button>
+      </div>
+
+      <div id="sessions-empty-state" class="festive-card hidden" style="text-align: center; padding: 48px 24px;">
+        <div style="font-size: 3.5rem; margin-bottom: 12px;">🦌</div>
+        <h3 style="font-size: 1.35rem; color: var(--gold-light); margin-bottom: 8px;">
+          Vous n'avez rejoint aucune session pour le moment
+        </h3>
+        <p style="color: var(--snow-muted); max-width: 480px; margin: 0 auto 20px;">
+          Créez votre propre session Secret Santa pour obtenir un code d'invitation, ou rejoignez celle d'un ami !
+        </p>
+      </div>
+
+      <div id="sessions-grid" class="sessions-grid"></div>
+    </section>
+
+    <!-- ==================== VUE DÉTAILLÉE D'UNE SESSION ==================== -->
+    <section id="session-view" class="hidden">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <button class="btn btn-outline btn-sm" id="back-to-dashboard-btn">
+          ← Retour à mes sessions
+        </button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <span style="font-size: 0.88rem; color: var(--snow-muted);">Code d'invitation :</span>
+          <span class="session-code-pill" id="detail-session-code">NOEL-0000</span>
+          <button class="btn btn-gold btn-sm" id="copy-code-btn">📋 Copier le code</button>
+        </div>
+      </div>
+
+      <!-- En-tête de la session -->
+      <div class="festive-card candy-border" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <span id="detail-status-badge" class="session-status-badge status-open">⏳ En attente du tirage</span>
+            <h1 id="detail-session-title" style="font-family: 'Mountains of Christmas', cursive; font-size: 2.6rem; color: var(--gold-light); margin-top: 6px;">
+              Session de Noël
+            </h1>
+            <p id="detail-session-desc" style="color: var(--snow-muted); margin-top: 4px;"></p>
+          </div>
+
+          <div style="display: flex; gap: 18px; background: rgba(0, 0, 0, 0.35); padding: 14px 20px; border-radius: 14px; border: 1px solid var(--border-gold);">
+            <div>
+              <div style="font-size: 0.76rem; color: var(--snow-muted); text-transform: uppercase;">Budget conseillé</div>
+              <div id="detail-session-budget" style="font-size: 1.15rem; font-weight: 800; color: var(--gold);">25 €</div>
+            </div>
+            <div style="width: 1px; background: rgba(255,255,255,0.15);"></div>
+            <div>
+              <div style="font-size: 0.76rem; color: var(--snow-muted); text-transform: uppercase;">Date de l'échange</div>
+              <div id="detail-session-date" style="font-size: 1.15rem; font-weight: 800; color: #fff;">25/12/2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="session-detail-grid">
+        <!-- COLONNE GAUCHE : TIRAGE AU SORT SECRET & MA LISTE DE SOUHAITS -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <!-- Boîte du Tirage Secret -->
+          <div class="secret-reveal-box" id="secret-draw-container">
+            <!-- Rempli dynamiquement par app.js selon que le tirage est ouvert ou effectué -->
+          </div>
+
+          <!-- Ma liste de souhaits personnelle dans cette session -->
+          <div class="festive-card">
+            <h3 style="color: var(--gold-light); font-size: 1.25rem; margin-bottom: 6px;">
+              📝 Ma Liste au Père Noël (Mes idées cadeaux)
+            </h3>
+            <p style="color: var(--snow-muted); font-size: 0.88rem; margin-bottom: 14px;">
+              Indiquez ici ce qui vous ferait plaisir ! <strong>Seule la personne qui vous aura tiré(e) au sort</strong> pourra voir votre liste.
+            </p>
+            <form id="wishlist-form">
+              <div class="form-group">
+                <textarea id="my-wishlist-input" placeholder="Ex: J'adore les romans policiers, les bougies parfumées, le chocolat au lait, taille M pour un pull..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-gold btn-sm">
+                💾 Enregistrer ma liste de souhaits
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- COLONNE DROITE : LISTE DES PARTICIPANTS & EXCLUSIONS -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="festive-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="color: var(--gold-light); font-size: 1.25rem;">
+                🧝 Participants (<span id="detail-participant-count">0</span>)
+              </h3>
+              <span style="font-size: 0.78rem; color: var(--snow-muted);">🔒 Tirages 100% secrets</span>
+            </div>
+            <p style="color: var(--snow-muted); font-size: 0.85rem; margin-top: 4px;">
+              Partagez le code <strong id="detail-inline-code" style="color: var(--gold);"></strong> à vos amis pour qu'ils rejoignent la session.
+            </p>
+
+            <div class="participants-list" id="detail-participants-list"></div>
+          </div>
+
+          <!-- Zone Exclusions (visible pour l'organisateur avant le tirage) -->
+          <div class="festive-card hidden" id="exclusions-card">
+            <h3 style="color: var(--gold-light); font-size: 1.15rem; margin-bottom: 6px;">
+              🚫 Exclusions de tirage (Optionnel)
+            </h3>
+            <p style="color: var(--snow-muted); font-size: 0.84rem; margin-bottom: 14px;">
+              Empêchez deux personnes (ex: un couple) de se tirer mutuellement au sort.
+            </p>
+            <form id="exclusion-form" style="display: flex; flex-direction: column; gap: 10px;">
+              <div class="form-row">
+                <select id="excl-from"></select>
+                <select id="excl-to"></select>
+              </div>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--snow); cursor: pointer;">
+                <input type="checkbox" id="excl-bidirectional" checked />
+                Réciproque (aucun des deux ne peut tirer l'autre)
+              </label>
+              <button type="submit" class="btn btn-outline btn-sm">
+                + Ajouter l'exclusion
+              </button>
+            </form>
+            <div id="exclusions-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== MODALE CRÉER UNE SESSION ==================== -->
+  <div id="create-session-modal" class="modal-backdrop hidden">
+    <div class="festive-card candy-border modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="color: var(--gold-light); font-size: 1.4rem;">🎁 Créer une session Secret Santa</h2>
+        <button type="button" class="btn btn-outline btn-sm" id="close-create-modal">✕</button>
+      </div>
+      <form id="create-session-form">
+        <div class="form-group">
+          <label for="modal-session-name">Nom de la session *</label>
+          <input type="text" id="modal-session-name" placeholder="Ex: Noël en Famille, Secret Santa du Bureau..." required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modal-session-budget">Budget conseillé</label>
+            <input type="text" id="modal-session-budget" value="25 €" placeholder="Ex: 25 €" />
+          </div>
+          <div class="form-group">
+            <label for="modal-session-date">Date de l'échange</label>
+            <input type="date" id="modal-session-date" value="2026-12-25" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="modal-session-desc">Petit mot ou règles (optionnel)</label>
+          <input type="text" id="modal-session-desc" placeholder="Ex: Rendez-vous le 24 au soir sous le sapin !" />
+        </div>
+        <div class="form-group">
+          <label for="modal-session-wishlist">Vos idées cadeaux personnelles (optionnel)</label>
+          <textarea id="modal-session-wishlist" placeholder="Ce qui vous ferait plaisir pour aider votre Père Noël..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          🎄 Créer la session et obtenir le code
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODALE REJOINDRE UNE SESSION ==================== -->
+  <div id="join-session-modal" class="modal-backdrop hidden">
+    <div class="festive-card candy-border modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="color: var(--gold-light); font-size: 1.4rem;">🎟️ Rejoindre une session</h2>
+        <button type="button" class="btn btn-outline btn-sm" id="close-join-modal">✕</button>
+      </div>
+      <form id="join-session-form">
+        <div class="form-group">
+          <label for="modal-join-code">Code d'invitation de la session *</label>
+          <input type="text" id="modal-join-code" placeholder="Ex: NOEL-7X9K" style="text-transform: uppercase; font-weight: 700; letter-spacing: 1px; font-size: 1.1rem;" required />
+        </div>
+        <div class="form-group">
+          <label for="modal-join-wishlist">Vos idées cadeaux (optionnel)</label>
+          <textarea id="modal-join-wishlist" placeholder="Indiquez quelques idées pour votre futur Père Noël secret..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-gold btn-block">
+          ✨ Rejoindre la session
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Conteneur des notifications -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
